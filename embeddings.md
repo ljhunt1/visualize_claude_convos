@@ -45,3 +45,23 @@ Open question: whether to transform `score_i` before the weighted mean (power sc
 ## Cost of dep
 
 `sentence-transformers` pulls in `torch` (~600MB install). On a 2021 MacBook Air this is acceptable. If we ever want a lighter install, `fastembed` (Qdrant, ONNX-based) is ~50MB and serves similar models — keep in pocket.
+
+## Mean-centering before clustering (important)
+
+All conversations are human↔AI exchanges, so their embeddings share a large common direction — "this is a Claude conversation." On our 50-conv corpus, the embedding-cloud mean had norm ~0.47 (in unit-normed space), which is substantial.
+
+Without removing this shared direction, clustering collapses most conversations into one mega-cluster: e.g. summary embeddings alone produced sizes `40, 3, 2, 1, 1, 1, 1, 1`. After **mean-centering + re-normalizing**, the same pipeline produces `12, 11, 11, 6, 4, 3, 2, 1`.
+
+```python
+mean_vec = conv_vecs.mean(axis=0, keepdims=True)
+conv_vecs = conv_vecs - mean_vec
+conv_vecs = conv_vecs / np.linalg.norm(conv_vecs, axis=1, keepdims=True)
+```
+
+Important detail: **pure mean-centering is a no-op for Euclidean clustering** (translation preserves pairwise distances). Re-normalizing after centering is what actually changes the angular structure — it puts vectors back on the unit sphere in the "shared-direction-removed" space, so cosine/Euclidean distances now reflect content similarity rather than meta-framing similarity.
+
+Both `cluster_tags.py` (tag-based) and `cluster_summaries.py` apply this. Toggle via `MEAN_CENTER` constant at the top of each.
+
+## Caveat / scope
+
+This works at N=50 with a defined corpus. If we later mix in conversations from a totally different source (e.g. ChatGPT exports), the shared direction may shift or weaken, and re-tuning will be needed.

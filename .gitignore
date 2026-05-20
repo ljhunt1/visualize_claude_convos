@@ -17,5 +17,9 @@ wheels/
 conversation_data/
 corpus/
 labels.jsonl
+conv_embeddings.npz
 tag_embeddings.npz
-clusters.md
+
+# Spike outputs are regenerable; the curated log is not
+spike_outputs/*
+!spike_outputs/experiments.md
