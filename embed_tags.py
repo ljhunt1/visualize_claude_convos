@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 
 LABELS = Path("labels.jsonl")
 OUT = Path("tag_embeddings.npz")
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+MODEL_NAME = "BAAI/bge-base-en-v1.5"
 
 
 def main() -> None:
