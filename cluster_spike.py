@@ -1,6 +1,9 @@
-"""Compute per-conversation vectors, cluster with HDBSCAN, write a human-readable report.
+"""Cluster conv_vecs, write report + artifacts.
 
-Reads labels.jsonl + tag_embeddings.npz. Writes clusters.md and prints summary to stdout.
+Reads labels.jsonl (for tag rollups, filenames, summaries) and conv_vecs.npz
+(per-conv vectors produced by embed_summaries.py or embed_tags.py). Writes
+<out_dir>/summary.md plus artifacts (conv_vecs.npy, labels.npy, meta.json;
+mean_vec.npy if MEAN_CENTER).
 """
 import json
 import sys
@@ -11,48 +14,45 @@ import numpy as np
 from sklearn.cluster import HDBSCAN, AgglomerativeClustering
 
 LABELS = Path("labels.jsonl")
-EMBEDDINGS = Path("tag_embeddings.npz")
+EMBEDDINGS = Path("conv_vecs.npz")
 
-ALGO = "agglomerative"  # "hdbscan" or "agglomerative"
+ALGO = "hdbscan"  # "hdbscan" or "agglomerative"
 MIN_CLUSTER_SIZE = 3    # only used when ALGO == "hdbscan"
 N_CLUSTERS = 8          # only used when ALGO == "agglomerative"
 TOP_TAGS_PER_CLUSTER = 10
 MEAN_CENTER = True  # subtract corpus centroid + renormalize; factors out the shared "this is a Claude conversation" direction
 
 
-def conv_vec(tags: list[dict], embeddings: np.ndarray, tag_idx: dict[str, int]) -> np.ndarray:
-    weights = np.array([t["score"] for t in tags], dtype=np.float32)
-    vecs = embeddings[[tag_idx[t["name"]] for t in tags]]
-    weighted = (weights[:, None] * vecs).sum(axis=0)
-    norm = np.linalg.norm(weighted)
-    return weighted / norm if norm > 0 else weighted
-
-
 def pretty_filename(filename: str) -> str:
     stem = filename.removesuffix(".txt")
-    # Filenames look like {uuid8}_{date}_{title}. Keep date + title.
     parts = stem.split("_", 2)
     return "  ".join(parts[1:]) if len(parts) >= 3 else stem
 
 
 def main() -> None:
     if len(sys.argv) != 2:
-        print(f"Usage: uv run python {sys.argv[0]} <out_path.md>")
+        print(f"Usage: uv run python {sys.argv[0]} <out_dir>")
         sys.exit(1)
-    out = Path(sys.argv[1])
+    out_dir = Path(sys.argv[1])
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    records = [json.loads(line) for line in LABELS.read_text().splitlines() if line.strip()]
+    records_by_filename = {
+        json.loads(line)["filename"]: json.loads(line)
+        for line in LABELS.read_text().splitlines()
+        if line.strip()
+    }
     data = np.load(EMBEDDINGS, allow_pickle=True)
-    tag_names = list(data["tag_names"])
-    embeddings = data["embeddings"]
-    tag_idx = {name: i for i, name in enumerate(tag_names)}
+    filenames = [str(f) for f in data["filenames"]]
+    conv_vecs = data["embeddings"]
+    records = [records_by_filename[f] for f in filenames]
+    print(f"Loaded {conv_vecs.shape[0]} conv vectors, dim {conv_vecs.shape[1]}.")
 
-    conv_vecs = np.stack([conv_vec(r["tags"], embeddings, tag_idx) for r in records])
-    print(f"Built {conv_vecs.shape[0]} conv vectors, dim {conv_vecs.shape[1]}.")
-
+    mean_vec = None
     if MEAN_CENTER:
         mean_vec = conv_vecs.mean(axis=0, keepdims=True)
         conv_vecs = conv_vecs - mean_vec
+        # Re-normalize: pure translation is a no-op for Euclidean distance, so we put
+        # vectors back on the unit sphere in the centered space (now angle-sensitive).
         norms = np.linalg.norm(conv_vecs, axis=1, keepdims=True)
         conv_vecs = conv_vecs / np.maximum(norms, 1e-12)
         print(f"Mean-centered + re-normalized. Shared mean had norm {np.linalg.norm(mean_vec):.3f}.")
@@ -76,16 +76,33 @@ def main() -> None:
     summary_line = f"{n_real} clusters" + (f" + {n_noise} noise points" if n_noise else "") + f". Sizes {sizes}."
     print(summary_line)
 
+    np.save(out_dir / "conv_vecs.npy", conv_vecs)
+    np.save(out_dir / "labels.npy", labels)
+    if mean_vec is not None:
+        np.save(out_dir / "mean_vec.npy", mean_vec.squeeze(0))
+
+    meta = {
+        "embedding_model": "BAAI/bge-base-en-v1.5",
+        "algo": ALGO,
+        "mean_center": MEAN_CENTER,
+        "min_cluster_size": MIN_CLUSTER_SIZE if ALGO == "hdbscan" else None,
+        "n_clusters_requested": N_CLUSTERS if ALGO == "agglomerative" else None,
+        "n_clusters_found": n_real,
+        "n_noise": n_noise,
+        "cluster_sizes": sizes,
+        "filenames": filenames,
+    }
+    (out_dir / "meta.json").write_text(json.dumps(meta, indent=2))
+
     lines: list[str] = [
         f"# Clusters from {len(records)} conversations",
-        f"",
-        f"{algo_desc} on L2-normed weighted-mean conv vectors. MEAN_CENTER={MEAN_CENTER}.",
-        f"",
+        "",
+        f"{algo_desc} on conv_vecs (conv_vecs.npz). MEAN_CENTER={MEAN_CENTER}.",
+        "",
         f"{n_real} clusters" + (f" + {n_noise} noise points" if n_noise else "") + ".",
-        f"",
+        "",
     ]
 
-    # Noise (-1) sorts last; real clusters by descending size.
     ordered = sorted(clusters.keys(), key=lambda l: (l == -1, -len(clusters[l])))
     for lbl in ordered:
         members = clusters[lbl]
@@ -106,14 +123,14 @@ def main() -> None:
         lines.append("")
         lines.append("**Conversations:**")
         for idx in sorted(members, key=lambda i: records[i]["filename"]):
-            lines.append(f"- {pretty_filename(records[idx]['filename'])}")
+            rec = records[idx]
+            lines.append(f"- **{pretty_filename(rec['filename'])}**")
+            lines.append(f"  - {rec['summary']}")
         lines.append("")
 
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text("\n".join(lines))
-    print(f"Wrote {out}")
+    (out_dir / "summary.md").write_text("\n".join(lines))
+    print(f"Wrote {out_dir}/")
 
-    # Stdout summary table
     print()
     print(f"{'cluster':>8}  {'n':>3}  top tags")
     print(f"{'-'*8}  {'-'*3}  {'-'*40}")

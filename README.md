@@ -18,19 +18,19 @@ END TO END SPIKE:
 1. Extract and clean conversations: conversation_data/ ----(extract_sample.py)----> corpus/
 2. Label with tags and summaries: corpus/ ----(label_corpus.py, imports label_spike.py)----> labels.jsonl
 
-   Embed tags:
+Pipeline: `corpus -> conv_vecs -> clusters/umaps`. Both experiment paths produce the same `conv_vecs.npz` (overwriting); the cluster step is one script that doesn't care how the vectors were built.
 
-3. Create embeddings: labels.jsonl ----(embed_tags.py)----> tag_embeddings.npz
-4. Embed each vector, cluster, report: labels.jsonl+tag_embeddings.npz ----(cluster_tags.py)----> stdout, clusters.md
+3a. Build conv_vecs from tag embeddings (weighted mean): labels.jsonl ----(embed_tags.py)----> conv_vecs.npz
+OR
+3b. Build conv_vecs from summary embeddings (direct): labels.jsonl ----(embed_summaries.py)----> conv_vecs.npz
 
-   Embed summaries:
+Then for either path:
 
-3) Create embeddings: labels.jsonl ----(embed_summaries.py)---->conv_embeddings.npz
-4) Embed each vector, cluster, report: labels.jsonl+conv_embeddings.npz----(cluster_summaries.py)---->stdout, cluster.md
-
-extracting embeddings: conversation_data ---(label_corpus.py, imports label_spike.py)--->
+4. Cluster + report: labels.jsonl+conv_vecs.npz ----(cluster_spike.py <out_dir>)----> stdout, <out_dir>/
 
 NEXT STEPS 5/20/26 3:10pm:
+
+- Spiking on prompt engineering and clustering
 
 1. Read through the experiment outcomes of 2-8 and see what I like
 2. Continue to run experiments. Talk to browser claude about outcomes. Want to get good first-principles and good empirical-results way of clustering.
@@ -47,11 +47,14 @@ Characterizing the experiments
 
 ---
 
-Experiments: see [spike_outputs/experiments.md](spike_outputs/experiments.md).
+Experiments: see [spike_summary_tag_embed_cluster/experiments.md](spike_summary_tag_embed_cluster/experiments.md).
 
-`cluster_summaries.py` and `cluster_tags.py` each take an output path as their sole argument. Naming convention: `NNN_<path>_<algo>_<centering>.md`. Example:
+`cluster_spike.py` takes an output directory as its sole argument and reads whatever `conv_vecs.npz` is on disk (last-written by `embed_summaries.py` or `embed_tags.py`). Each run writes `summary.md`, `conv_vecs.npy`, `labels.npy`, `meta.json` (and `mean_vec.npy` if mean-centered) into that directory. Naming convention: `NNN_<path>_<algo>_<centering>/`. Example:
 
 ```
-uv run python cluster_summaries.py spike_outputs/005_summaries_hdbscan_nomean.md
-uv run python cluster_tags.py      spike_outputs/006_tags_hdbscan_meancentered.md
+uv run python embed_summaries.py
+uv run python cluster_spike.py spike_summary_tag_embed_cluster/005_summaries_agglomerative_nomean
+
+uv run python embed_tags.py
+uv run python cluster_spike.py spike_summary_tag_embed_cluster/006_tags_agglomerative_nomean
 ```

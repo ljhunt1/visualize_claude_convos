@@ -17,9 +17,9 @@ wheels/
 conversation_data/
 corpus/
 labels.jsonl
-conv_embeddings.npz
-tag_embeddings.npz
+conv_vecs.npz
+umap_*.html
 
-# Spike outputs are regenerable; the curated log is not
-spike_outputs/*
-!spike_outputs/experiments.md
+# Spike outputs contain personal conversation titles/content; the curated log does not
+spike_summary_tag_embed_cluster/*
+!spike_summary_tag_embed_cluster/experiments.md

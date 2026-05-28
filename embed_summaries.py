@@ -1,6 +1,6 @@
-"""Embed each conversation summary; persist to conv_embeddings.npz.
+"""Embed each conversation summary; persist to conv_vecs.npz.
 
-Output: conv_embeddings.npz with arrays `filenames` (str[N]) and `embeddings` (float32[N, dim]).
+Output: conv_vecs.npz with arrays `filenames` (str[N]) and `embeddings` (float32[N, dim]).
 """
 import json
 from pathlib import Path
@@ -9,7 +9,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 LABELS = Path("labels.jsonl")
-OUT = Path("conv_embeddings.npz")
+OUT = Path("conv_vecs.npz")
 MODEL_NAME = "BAAI/bge-base-en-v1.5"
 
 

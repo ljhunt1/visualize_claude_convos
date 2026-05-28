@@ -39,8 +39,7 @@ Open question: whether to transform `score_i` before the weighted mean (power sc
 
 ## Persistence
 
-- `tag_embeddings.npz` — `tag_names: array[str]`, `embeddings: array[N, 384]`. One row per unique tag string across the corpus.
-- `conv_vecs.npz` (downstream) — per-conversation aggregated vectors, computed on-demand from `labels.jsonl` + `tag_embeddings.npz`.
+- `conv_vecs.npz` — `filenames: array[str]`, `embeddings: array[N, dim]`. One row per conversation. Written by either `embed_summaries.py` (direct summary embedding) or `embed_tags.py` (weighted mean of tag embeddings). Tag embeddings themselves are transient and never persisted; the conceptual pipeline is `corpus -> conv_vecs -> clusters/umaps`.
 
 ## Cost of dep
 
@@ -60,7 +59,7 @@ conv_vecs = conv_vecs / np.linalg.norm(conv_vecs, axis=1, keepdims=True)
 
 Important detail: **pure mean-centering is a no-op for Euclidean clustering** (translation preserves pairwise distances). Re-normalizing after centering is what actually changes the angular structure — it puts vectors back on the unit sphere in the "shared-direction-removed" space, so cosine/Euclidean distances now reflect content similarity rather than meta-framing similarity.
 
-Both `cluster_tags.py` (tag-based) and `cluster_summaries.py` apply this. Toggle via `MEAN_CENTER` constant at the top of each.
+`cluster_spike.py` applies this. Toggle via the `MEAN_CENTER` constant at the top.
 
 ## Caveat / scope
 
