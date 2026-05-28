@@ -18,6 +18,9 @@ conversation_data/
 corpus/
 labels.jsonl
 conv_vecs.npz
+canonical_tags.jsonl
+canonical_tags_raw.json
+feature_vecs.npz
 umap_*.html
 
 # Spike outputs contain personal conversation titles/content; the curated log does not
