@@ -7,7 +7,8 @@ from pathlib import Path
 
 import anthropic
 
-CORPUS_DIR = Path("corpus")
+HERE = Path(__file__).parent
+CORPUS_DIR = HERE / "corpus"
 N_SAMPLES = 5
 MODEL = "claude-haiku-4-5-20251001"
 

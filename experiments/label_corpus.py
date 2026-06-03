@@ -14,8 +14,9 @@ from anthropic import AsyncAnthropic
 
 from label_spike import LABEL_TOOL, MODEL, SYSTEM_PROMPT
 
-CORPUS = Path("corpus")
-OUT = Path("labels.jsonl")
+HERE = Path(__file__).parent
+CORPUS = HERE / "corpus"
+OUT = HERE / "labels.jsonl"
 CONCURRENCY = 2  # low to stay under 50k input-token/min rate limit
 
 

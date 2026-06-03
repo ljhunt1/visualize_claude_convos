@@ -13,11 +13,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 import umap
 
-LABELS = Path("labels.jsonl")
-CONV_EMBEDDINGS = Path("conv_vecs.npz")
-FEATURE_EMBEDDINGS = Path("feature_vecs.npz")
-EXPERIMENT_DIR = Path("spike_summary_tag_embed_cluster/004_tags_hdbscan_meancentered")
-OUT = Path("umap_features_spike.html")
+HERE = Path(__file__).parent
+LABELS = HERE / "labels.jsonl"
+CONV_EMBEDDINGS = HERE / "conv_vecs.npz"
+FEATURE_EMBEDDINGS = HERE / "feature_vecs.npz"
+EXPERIMENT_DIR = HERE / "spike_summary_tag_embed_cluster/004_tags_hdbscan_meancentered"
+OUT = HERE / "umap_features_spike.html"
 
 MEAN_CENTER = False  # off by default for joint fit; the conv-only "shared direction" doesn't cleanly apply to features
 N_NEIGHBORS = 15

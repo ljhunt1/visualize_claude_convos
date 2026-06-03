@@ -13,8 +13,9 @@ from pathlib import Path
 import numpy as np
 from sklearn.cluster import HDBSCAN, AgglomerativeClustering
 
-LABELS = Path("labels.jsonl")
-EMBEDDINGS = Path("conv_vecs.npz")
+HERE = Path(__file__).parent
+LABELS = HERE / "labels.jsonl"
+EMBEDDINGS = HERE / "conv_vecs.npz"
 
 ALGO = "hdbscan"  # "hdbscan" or "agglomerative"
 MIN_CLUSTER_SIZE = 3    # only used when ALGO == "hdbscan"

@@ -14,10 +14,11 @@ import pandas as pd
 import plotly.express as px
 import umap
 
-LABELS = Path("labels.jsonl")
-EMBEDDINGS = Path("conv_vecs.npz")
-EXPERIMENT_DIR = Path("spike_summary_tag_embed_cluster/004_tags_hdbscan_meancentered")
-OUT = Path("umap_spike.html")
+HERE = Path(__file__).parent
+LABELS = HERE / "labels.jsonl"
+EMBEDDINGS = HERE / "conv_vecs.npz"
+EXPERIMENT_DIR = HERE / "spike_summary_tag_embed_cluster/004_tags_hdbscan_meancentered"
+OUT = HERE / "umap_spike.html"
 
 MEAN_CENTER = True
 N_NEIGHBORS = 15

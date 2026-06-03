@@ -15,14 +15,14 @@ wheels/
 
 # Personal conversation data + derived artifacts (regenerable from scripts)
 conversation_data/
-corpus/
-labels.jsonl
-conv_vecs.npz
-canonical_tags.jsonl
-canonical_tags_raw.json
-feature_vecs.npz
-umap_*.html
+experiments/corpus/
+experiments/labels.jsonl
+experiments/conv_vecs.npz
+experiments/canonical_tags.jsonl
+experiments/canonical_tags_raw.json
+experiments/feature_vecs.npz
+experiments/umap_*.html
 
 # Spike outputs contain personal conversation titles/content; the curated log does not
-spike_summary_tag_embed_cluster/*
-!spike_summary_tag_embed_cluster/experiments.md
+experiments/spike_summary_tag_embed_cluster/*
+!experiments/spike_summary_tag_embed_cluster/experiments.md

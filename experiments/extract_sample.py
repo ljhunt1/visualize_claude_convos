@@ -8,7 +8,9 @@ import json
 import sys
 from pathlib import Path
 
-EXPORT = Path("conversation_data/unzipped/conversations.json")
+HERE = Path(__file__).parent
+EXPORT = HERE.parent / "conversation_data/unzipped/conversations.json"
+DEFAULT_OUT = HERE / "corpus"
 MIN_MESSAGES = 4
 MAX_EMPTY_STREAK = 2  # reject convos with 3+ consecutive empty messages
 
@@ -70,5 +72,5 @@ def extract(n_samples: int, out_dir: Path) -> None:
 
 if __name__ == "__main__":
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 5
-    out = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("corpus")
+    out = Path(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_OUT
     extract(n, out)

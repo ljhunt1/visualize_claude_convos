@@ -12,8 +12,9 @@ from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-LABELS = Path("labels.jsonl")
-OUT = Path("conv_vecs.npz")
+HERE = Path(__file__).parent
+LABELS = HERE / "labels.jsonl"
+OUT = HERE / "conv_vecs.npz"
 MODEL_NAME = "BAAI/bge-base-en-v1.5"
 
 

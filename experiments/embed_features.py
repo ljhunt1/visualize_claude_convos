@@ -11,8 +11,9 @@ from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-INPUT = Path("canonical_tags.jsonl")
-OUT = Path("feature_vecs.npz")
+HERE = Path(__file__).parent
+INPUT = HERE / "canonical_tags.jsonl"
+OUT = HERE / "feature_vecs.npz"
 MODEL_NAME = "BAAI/bge-base-en-v1.5"
 
 

@@ -11,8 +11,9 @@ from pathlib import Path
 
 import anthropic
 
-INPUT = Path("labels.jsonl")
-OUT = Path("canonical_tags.jsonl")
+HERE = Path(__file__).parent
+INPUT = HERE / "labels.jsonl"
+OUT = HERE / "canonical_tags.jsonl"
 MODEL = "claude-haiku-4-5-20251001"
 
 # ---------------------------------------------------------------------------
