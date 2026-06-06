@@ -23,6 +23,9 @@ experiments/canonical_tags_raw.json
 experiments/feature_vecs.npz
 experiments/umap_*.html
 
+# UI data export contains personal conversation content
+ui/public/data.json
+
 # Spike outputs contain personal conversation titles/content; the curated log does not
 experiments/spike_summary_tag_embed_cluster/*
 !experiments/spike_summary_tag_embed_cluster/experiments.md

@@ -52,6 +52,7 @@ The below steps are a work in progress, and I want to actively experiment on the
 | --------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------- |
 | conversation text                 | per-conversation, given    | N/A downloaded from claude.ai                                                                         |
 | conversation metadata: datetime   | per-conversation, given    | N/A downloaded from claude.ai                                                                         |
+    | N/A downloaded from claude.ai                                                                         |
 | conversation metadata: word count | per-conversation, computed | When new corpus loaded from claude.ai                                                                 |
 | conversation metadata: turn count | per-conversation, computed | When new corpus loaded from claude.ai                                                                 |
 | conversation metadata: project    | Cant get / TODO            | N/A                                                                                                   |
