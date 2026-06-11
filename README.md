@@ -25,15 +25,6 @@ _(Screenshot shows synthetic demo data, not anyone's real conversations.)_
 See [PLAN.md](PLAN.md) for the design and [pipeline/README.md](pipeline/README.md)
 for stage-by-stage details and caching rules.
 
-## Try it on demo data
-
-No export or API key needed — generates a fake corpus so you can play with the UI:
-
-```
-uv run python pipeline/demo_data.py
-cd ui && nvm install && npm install && npm run dev
-```
-
 ## Run it on your own conversations
 
 1. claude.ai → Settings → Privacy → Export data. Unzip so that
@@ -42,7 +33,7 @@ cd ui && nvm install && npm install && npm run dev
 3. `uv run --env-file .env python pipeline/run_all.py` — a few hundred
    conversations costs a dollar or two of Haiku and takes ~20 minutes
    (labeling is cached, so re-runs only process new conversations)
-4. `cd ui && npm run dev`
+4. `cd ui && nvm install && npm install && npm run dev`
 
 Everything personal stays local and gitignored (`conversation_data/`,
 `pipeline/data/`, `ui/public/data.json`).
@@ -54,6 +45,8 @@ Everything personal stays local and gitignored (`conversation_data/`,
 - Python side uses [uv](https://docs.astral.sh/uv/); UI is node 26 (`.nvmrc`),
   Vite + React 19 + TypeScript, with `npm run build` gated on eslint, tsc, and
   prettier
+- `uv run python pipeline/demo_data.py` writes a synthetic `data.json` — handy
+  for UI work and screenshots without real conversations on screen
 - Spike/experiment code, including earlier iterations of the embed pipeline and
   UI, lives in [`experiments/`](experiments/) — see
   [experiments/README.md](experiments/README.md). More experiments may land
