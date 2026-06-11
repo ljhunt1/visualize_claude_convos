@@ -53,6 +53,11 @@ function Atlas({ data }: { data: UIData }) {
     };
   }, []);
 
+  const clusterNames = useMemo(
+    () => new Map(data.clusters.map((c) => [c.id, c.name])),
+    [data.clusters],
+  );
+
   const matchedIds = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return null;
@@ -143,7 +148,7 @@ function Atlas({ data }: { data: UIData }) {
                     className="cluster-dot"
                     style={{ background: clusterColor(theme, cluster) }}
                   />
-                  {clusterLabel(cluster)}
+                  {clusterLabel(cluster, clusterNames)}
                 </button>
               </li>
             );
@@ -168,6 +173,7 @@ function Atlas({ data }: { data: UIData }) {
             theme={theme}
             conversations={data.conversations}
             landmarks={data.landmarks}
+            clusterNames={clusterNames}
             matchedIds={matchedIds}
             hiddenClusters={hiddenClusters}
             showLandmarks={showLandmarks}
@@ -178,6 +184,7 @@ function Atlas({ data }: { data: UIData }) {
         <DetailPanel
           theme={theme}
           data={data}
+          clusterNames={clusterNames}
           selected={selected}
           onClose={() => {
             setSelectedId(null);

@@ -22,6 +22,7 @@ interface MapViewProps {
   theme: Theme;
   conversations: Conversation[];
   landmarks: Landmark[];
+  clusterNames: ReadonlyMap<number, string>;
   /** Conversation ids matching the current search; null = no search active. */
   matchedIds: ReadonlySet<string> | null;
   hiddenClusters: ReadonlySet<number | null>;
@@ -107,6 +108,7 @@ export function MapView({
   theme,
   conversations,
   landmarks,
+  clusterNames,
   matchedIds,
   hiddenClusters,
   showLandmarks,
@@ -187,7 +189,8 @@ export function MapView({
         },
         hoverinfo: 'text',
         hovertext: convs.map(
-          (c) => `${c.title}<br>${c.date} · ${clusterLabel(cluster)}`,
+          (c) =>
+            `${c.title}<br>${c.date} · ${clusterLabel(cluster, clusterNames)}`,
         ),
       });
     }
@@ -213,6 +216,7 @@ export function MapView({
     theme,
     conversations,
     landmarks,
+    clusterNames,
     matchedIds,
     hiddenClusters,
     showLandmarks,

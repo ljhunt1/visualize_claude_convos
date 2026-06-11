@@ -5,6 +5,7 @@ import type { Conversation, UIData } from 'types';
 interface DetailPanelProps {
   theme: Theme;
   data: UIData;
+  clusterNames: ReadonlyMap<number, string>;
   selected: Conversation | null;
   onClose: () => void;
 }
@@ -12,10 +13,12 @@ interface DetailPanelProps {
 function SpecimenCard({
   theme,
   conversation,
+  clusterNames,
   onClose,
 }: {
   theme: Theme;
   conversation: Conversation;
+  clusterNames: ReadonlyMap<number, string>;
   onClose: () => void;
 }) {
   const tags = useMemo(
@@ -29,11 +32,13 @@ function SpecimenCard({
       <header className="specimen-head">
         <div className="specimen-kicker">
           <span className="cluster-dot" style={{ background: ink }} />
-          <span>{clusterLabel(conversation.cluster)}</span>
+          <span>{clusterLabel(conversation.cluster, clusterNames)}</span>
           <span className="kicker-sep">·</span>
           <span>{conversation.date}</span>
           <span className="kicker-sep">·</span>
-          <span>{conversation.nChars.toLocaleString()} chars</span>
+          <span>{conversation.nTurns} turns</span>
+          <span className="kicker-sep">·</span>
+          <span>{conversation.nWords.toLocaleString()} words</span>
         </div>
         <button
           type="button"
@@ -48,6 +53,12 @@ function SpecimenCard({
       <h2 className="specimen-title">{conversation.title}</h2>
 
       <p className="specimen-summary">{conversation.summary}</p>
+
+      <p className="specimen-link">
+        <a href={conversation.url} target="_blank" rel="noreferrer">
+          open in claude.ai ↗
+        </a>
+      </p>
 
       <section>
         <h3 className="section-label">Tags</h3>
@@ -78,7 +89,15 @@ function SpecimenCard({
   );
 }
 
-function AtlasOverview({ theme, data }: { theme: Theme; data: UIData }) {
+function AtlasOverview({
+  theme,
+  data,
+  clusterNames,
+}: {
+  theme: Theme;
+  data: UIData;
+  clusterNames: ReadonlyMap<number, string>;
+}) {
   const { conversations, landmarks, meta } = data;
 
   const clusterCounts = useMemo(() => {
@@ -113,7 +132,9 @@ function AtlasOverview({ theme, data }: { theme: Theme; data: UIData }) {
                 className="cluster-dot"
                 style={{ background: clusterColor(theme, cluster) }}
               />
-              <span className="cluster-name">{clusterLabel(cluster)}</span>
+              <span className="cluster-name">
+                {clusterLabel(cluster, clusterNames)}
+              </span>
               <span className="cluster-count">{count}</span>
             </li>
           ))}
@@ -131,11 +152,15 @@ function AtlasOverview({ theme, data }: { theme: Theme; data: UIData }) {
 
       <footer className="overview-meta">
         <p>
-          ⚠ one-off test dump · {meta.generatedAt}
+          generated {meta.generatedAt}
+          <br />
+          labels: {meta.labelModel} (prompt {meta.labelPromptFp})
+          <br />
+          embeddings: {meta.embedModel}
           <br />
           umap n_neighbors={meta.umap.nNeighbors} min_dist={meta.umap.minDist}
           <br />
-          clusters from {meta.clusterSource}
+          {meta.clusterAlgo}
         </p>
       </footer>
     </div>
@@ -145,15 +170,21 @@ function AtlasOverview({ theme, data }: { theme: Theme; data: UIData }) {
 export function DetailPanel({
   theme,
   data,
+  clusterNames,
   selected,
   onClose,
 }: DetailPanelProps) {
   return (
     <aside className="panel">
       {selected ? (
-        <SpecimenCard theme={theme} conversation={selected} onClose={onClose} />
+        <SpecimenCard
+          theme={theme}
+          conversation={selected}
+          clusterNames={clusterNames}
+          onClose={onClose}
+        />
       ) : (
-        <AtlasOverview theme={theme} data={data} />
+        <AtlasOverview theme={theme} data={data} clusterNames={clusterNames} />
       )}
     </aside>
   );

@@ -181,6 +181,10 @@ export function clusterColor(theme: Theme, cluster: number | null): string {
   );
 }
 
-export function clusterLabel(cluster: number | null): string {
-  return cluster === null ? 'unclustered' : `cluster ${String(cluster)}`;
+export function clusterLabel(
+  cluster: number | null,
+  names?: ReadonlyMap<number, string>,
+): string {
+  if (cluster === null) return 'unclustered';
+  return names?.get(cluster) ?? `cluster ${String(cluster)}`;
 }

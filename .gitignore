@@ -15,6 +15,7 @@ wheels/
 
 # Personal conversation data + derived artifacts (regenerable from scripts)
 conversation_data/
+pipeline/data/
 experiments/corpus/
 experiments/labels.jsonl
 experiments/conv_vecs.npz

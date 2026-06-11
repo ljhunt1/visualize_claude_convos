@@ -10,7 +10,7 @@ function assertUIData(value: unknown): asserts value is UIData {
     throw new Error('data.json: expected a JSON object');
   }
   const obj = value as Record<string, unknown>;
-  for (const key of ['conversations', 'landmarks'] as const) {
+  for (const key of ['conversations', 'landmarks', 'clusters'] as const) {
     if (!Array.isArray(obj[key])) {
       throw new Error(`data.json: missing array field "${key}"`);
     }
@@ -25,7 +25,7 @@ export async function fetchUIData(): Promise<UIData> {
   if (!res.ok) {
     throw new Error(
       `Failed to fetch /data.json (HTTP ${String(res.status)}). ` +
-        'Generate it with: uv run python experiments/dump_test_data_for_ui.py',
+        'Generate it with: uv run --env-file .env python pipeline/run_all.py',
     );
   }
   const json: unknown = await res.json();
