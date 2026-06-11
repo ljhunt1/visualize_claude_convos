@@ -1,0 +1,215 @@
+import { DetailPanel } from 'components/DetailPanel';
+import { MapView } from 'components/MapView';
+import { useUIData } from 'data';
+import { useEffect, useMemo, useState } from 'react';
+import { clusterColor, clusterLabel, THEMES, themeById } from 'themes';
+import type { Conversation, UIData } from 'types';
+
+const THEME_STORAGE_KEY = 'convo-map-theme';
+
+function matchesQuery(conv: Conversation, query: string): boolean {
+  const haystack = [
+    conv.title,
+    conv.summary,
+    conv.date,
+    ...conv.tags.map((t) => t.name),
+  ]
+    .join('\n')
+    .toLowerCase();
+  return haystack.includes(query);
+}
+
+function clusterIds(conversations: Conversation[]): (number | null)[] {
+  const seen = new Set<number | null>();
+  for (const conv of conversations) seen.add(conv.cluster);
+  return [...seen].sort(
+    (a, b) => (a ?? Number.MAX_SAFE_INTEGER) - (b ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
+function Atlas({ data }: { data: UIData }) {
+  const [theme, setTheme] = useState(() =>
+    themeById(localStorage.getItem(THEME_STORAGE_KEY)),
+  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [showLandmarks, setShowLandmarks] = useState(true);
+  const [hiddenClusters, setHiddenClusters] = useState<
+    ReadonlySet<number | null>
+  >(() => new Set());
+
+  useEffect(() => {
+    document.title = theme.appName;
+    localStorage.setItem(THEME_STORAGE_KEY, theme.id);
+  }, [theme]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedId(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
+
+  const clusterNames = useMemo(
+    () => new Map(data.clusters.map((c) => [c.id, c.name])),
+    [data.clusters],
+  );
+
+  const matchedIds = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return null;
+    return new Set(
+      data.conversations
+        .filter((conv) => matchesQuery(conv, needle))
+        .map((conv) => conv.id),
+    );
+  }, [data.conversations, query]);
+
+  const selected = useMemo(
+    () => data.conversations.find((conv) => conv.id === selectedId) ?? null,
+    [data.conversations, selectedId],
+  );
+
+  const toggleCluster = (cluster: number | null) => {
+    setHiddenClusters((prev) => {
+      const next = new Set(prev);
+      if (next.has(cluster)) {
+        next.delete(cluster);
+      } else {
+        next.add(cluster);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div className="app" data-theme={theme.id}>
+      <header className="masthead">
+        <div className="masthead-name">
+          <h1 className="masthead-title">{theme.appName}</h1>
+          <p className="masthead-tagline">{theme.tagline}</p>
+        </div>
+        <div className="masthead-side">
+          <p className="masthead-stats">
+            {data.conversations.length} conversations · {data.landmarks.length}{' '}
+            landmarks
+          </p>
+          <label className="flavor-picker">
+            flavor
+            <select
+              value={theme.id}
+              onChange={(event) => {
+                setTheme(themeById(event.target.value));
+              }}
+            >
+              {THEMES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <div className="toolbar">
+        <div className="search">
+          <input
+            type="search"
+            value={query}
+            placeholder="search titles, summaries, tags…"
+            onChange={(event) => {
+              setQuery(event.target.value);
+            }}
+          />
+          {matchedIds !== null && (
+            <span className="search-count">
+              {matchedIds.size} / {data.conversations.length}
+            </span>
+          )}
+        </div>
+
+        <ul className="chips">
+          {clusterIds(data.conversations).map((cluster) => {
+            const hidden = hiddenClusters.has(cluster);
+            return (
+              <li key={cluster ?? 'noise'}>
+                <button
+                  type="button"
+                  className={hidden ? 'chip chip-off' : 'chip'}
+                  onClick={() => {
+                    toggleCluster(cluster);
+                  }}
+                >
+                  <span
+                    className="cluster-dot"
+                    style={{ background: clusterColor(theme, cluster) }}
+                  />
+                  {clusterLabel(cluster, clusterNames)}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <label className="landmark-toggle">
+          <input
+            type="checkbox"
+            checked={showLandmarks}
+            onChange={(event) => {
+              setShowLandmarks(event.target.checked);
+            }}
+          />
+          ✛ landmark tags
+        </label>
+      </div>
+
+      <main className="main">
+        <div className="map">
+          <MapView
+            theme={theme}
+            conversations={data.conversations}
+            landmarks={data.landmarks}
+            clusterNames={clusterNames}
+            matchedIds={matchedIds}
+            hiddenClusters={hiddenClusters}
+            showLandmarks={showLandmarks}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        </div>
+        <DetailPanel
+          theme={theme}
+          data={data}
+          clusterNames={clusterNames}
+          selected={selected}
+          onClose={() => {
+            setSelectedId(null);
+          }}
+        />
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  const state = useUIData();
+
+  if (state.status === 'loading') {
+    return <div className="screen-message">surveying…</div>;
+  }
+  if (state.status === 'error') {
+    return (
+      <div className="screen-message screen-error">
+        <p>Could not load the atlas.</p>
+        <pre>{state.message}</pre>
+      </div>
+    );
+  }
+  return <Atlas data={state.data} />;
+}
+
+export default App;

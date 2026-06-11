@@ -26,7 +26,7 @@ The below steps are a work in progress, and I want to actively experiment on the
 
 5. UMAP the `conversation_vecs` and `landmark_vecs`
 6. Cluster the `conversation_vecs`: mean-center them, then rescale to length 1 (claude tells me this is a conincal-ish transformation to apply to fix for the fact that the vectors have high anisotropy, I'm not 100% sure I get it). Then do HBDSCAN, min_cluster_size=3, cosine metric.
-7. Cluster naming: TODO, should be easy just another Haiku prompt
+7. Cluster naming: just an easy haiku prompt
 8. UMAPS and clusters are used to build a UI
    - Scatter plot of UMAP 2D coords, cluster region labels overlaid
    - Points colored by clusters.
@@ -43,6 +43,8 @@ The below steps are a work in progress, and I want to actively experiment on the
 - **(3); not tried**: Experiment with a closed vocabulary of possible tags - maybe nice for readability or filtering down the line, and to make conversation vs landmarks less apples to oranges. Could obviate the need to generate landmarks separately, and we'd just embed landmarks + convos are weighted sums of those. Could lead to feature-based filtering
 - **(6); experimented on in spike_summary_tag_embed_cluster, could use more experimentation**: Clustering algorithm. HBDSCAN vs agglomerative. Cosine metric vs not. Mean-center-then-rescale or not
   Idea: try full PCA whitening instead of mean centering
+- **(4); not tried**: Iterate on the landmark-consolidation system prompt (pipeline/prompts.py, first draft by Claude). Knobs: vocabulary size, abstraction level, coverage vs. distinctness
+- **(7); not tried**: Iterate on the cluster-naming system prompt (pipeline/prompts.py, first draft by Claude). Check names against cluster members for over/under-specificity
 - **Not tried**: Try prompting on other things than topic or vibe, like specifically for "claude's mood and engagement style" or something. See how this correlates
 - **Other analysis**: Time-series of feature frequency, co-occurence of features cross-conversation, etc.
 
@@ -52,6 +54,7 @@ The below steps are a work in progress, and I want to actively experiment on the
 | --------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------- |
 | conversation text                 | per-conversation, given    | N/A downloaded from claude.ai                                                                         |
 | conversation metadata: datetime   | per-conversation, given    | N/A downloaded from claude.ai                                                                         |
+| N/A downloaded from claude.ai     |
 | conversation metadata: word count | per-conversation, computed | When new corpus loaded from claude.ai                                                                 |
 | conversation metadata: turn count | per-conversation, computed | When new corpus loaded from claude.ai                                                                 |
 | conversation metadata: project    | Cant get / TODO            | N/A                                                                                                   |

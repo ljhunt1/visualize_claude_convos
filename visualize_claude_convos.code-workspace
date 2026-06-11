@@ -1,0 +1,27 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+    },
+    "editor.formatOnSave": true,
+    "eslint.enable": true,
+    "eslint.workingDirectories": [
+      { "directory": "ui", "changeProcessCWD": true },
+    ],
+    "javascript.preferences.importModuleSpecifier": "non-relative",
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "workbench.colorCustomizations": {
+      "titleBar.activeBackground": "#16653460",
+      "titleBar.inactiveBackground": "#16653460",
+    },
+  },
+  "extensions": {
+    "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+  },
+}
