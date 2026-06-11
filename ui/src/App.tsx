@@ -1,9 +1,11 @@
 import { DetailPanel } from 'components/DetailPanel';
 import { MapView } from 'components/MapView';
 import { useUIData } from 'data';
-import { clusterColor, clusterLabel } from 'palette';
 import { useEffect, useMemo, useState } from 'react';
+import { clusterColor, clusterLabel, THEMES, themeById } from 'themes';
 import type { Conversation, UIData } from 'types';
+
+const THEME_STORAGE_KEY = 'convo-map-theme';
 
 function matchesQuery(conv: Conversation, query: string): boolean {
   const haystack = [
@@ -26,12 +28,20 @@ function clusterIds(conversations: Conversation[]): (number | null)[] {
 }
 
 function Atlas({ data }: { data: UIData }) {
+  const [theme, setTheme] = useState(() =>
+    themeById(localStorage.getItem(THEME_STORAGE_KEY)),
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [showLandmarks, setShowLandmarks] = useState(true);
   const [hiddenClusters, setHiddenClusters] = useState<
     ReadonlySet<number | null>
   >(() => new Set());
+
+  useEffect(() => {
+    document.title = theme.appName;
+    localStorage.setItem(THEME_STORAGE_KEY, theme.id);
+  }, [theme]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -71,15 +81,33 @@ function Atlas({ data }: { data: UIData }) {
   };
 
   return (
-    <div className="app">
+    <div className="app" data-theme={theme.id}>
       <header className="masthead">
-        <h1 className="masthead-title">
-          Conversation <em>Atlas</em>
-        </h1>
-        <p className="masthead-stats">
-          {data.conversations.length} conversations · {data.landmarks.length}{' '}
-          landmarks
-        </p>
+        <div className="masthead-name">
+          <h1 className="masthead-title">{theme.appName}</h1>
+          <p className="masthead-tagline">{theme.tagline}</p>
+        </div>
+        <div className="masthead-side">
+          <p className="masthead-stats">
+            {data.conversations.length} conversations · {data.landmarks.length}{' '}
+            landmarks
+          </p>
+          <label className="flavor-picker">
+            flavor
+            <select
+              value={theme.id}
+              onChange={(event) => {
+                setTheme(themeById(event.target.value));
+              }}
+            >
+              {THEMES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </header>
 
       <div className="toolbar">
@@ -113,7 +141,7 @@ function Atlas({ data }: { data: UIData }) {
                 >
                   <span
                     className="cluster-dot"
-                    style={{ background: clusterColor(cluster) }}
+                    style={{ background: clusterColor(theme, cluster) }}
                   />
                   {clusterLabel(cluster)}
                 </button>
@@ -130,13 +158,14 @@ function Atlas({ data }: { data: UIData }) {
               setShowLandmarks(event.target.checked);
             }}
           />
-          landmarks
+          ✛ landmark tags
         </label>
       </div>
 
       <main className="main">
         <div className="map">
           <MapView
+            theme={theme}
             conversations={data.conversations}
             landmarks={data.landmarks}
             matchedIds={matchedIds}
@@ -147,6 +176,7 @@ function Atlas({ data }: { data: UIData }) {
           />
         </div>
         <DetailPanel
+          theme={theme}
           data={data}
           selected={selected}
           onClose={() => {

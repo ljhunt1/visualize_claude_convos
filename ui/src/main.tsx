@@ -1,4 +1,7 @@
+import '@fontsource-variable/archivo/index.css';
+import '@fontsource-variable/cormorant/index.css';
 import '@fontsource-variable/fraunces/index.css';
+import '@fontsource-variable/shantell-sans/index.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-sans/400.css';
 import '@fontsource/ibm-plex-sans/500.css';

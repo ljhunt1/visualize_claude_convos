@@ -1,23 +1,10 @@
-/* Field Atlas — paper, ink, forest green. */
+/*
+ * Shared structure + per-flavor theme blocks (keyed off [data-theme]).
+ * Colors/fonts that plotly renders live in src/themes.ts, not here.
+ */
 
 :root {
-  --paper: #f6f2e9;
-  --paper-deep: #efe9da;
-  --card: #fcfaf3;
-  --ink: #20281f;
-  --ink-soft: #5c6557;
-  --ink-faint: #8b9183;
-  --accent: #1d6b3c;
-  --line: #d9d2bf;
-  --line-soft: #e7e1d1;
-
-  --sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --serif: 'Fraunces Variable', Georgia, serif;
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
-
-  font: 15px/1.55 var(--sans);
-  color: var(--ink);
-  background: var(--paper);
+  font-size: 15px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -35,12 +22,39 @@ body {
   height: 100svh;
 }
 
-/* ---- shell -------------------------------------------------------- */
+/* ---- default tokens (field atlas) ---------------------------------- */
+
+.app,
+.screen-message {
+  --bg: #f6f2e9;
+  --bg-2: #efe9da;
+  --card: #fcfaf3;
+  --ink: #20281f;
+  --ink-soft: #5c6557;
+  --ink-faint: #8b9183;
+  --accent: #1d6b3c;
+  --line: #d9d2bf;
+  --line-soft: #e7e1d1;
+  --frame: #20281f;
+  --frame-w: 1px;
+  --radius: 999px;
+  --radius-sm: 4px;
+  --grid-dot: #e7e1d1;
+
+  --display: 'Fraunces Variable', Georgia, serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+/* ---- shell ---------------------------------------------------------- */
 
 .app {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.55 var(--body);
   animation: settle 0.5s ease-out both;
 }
 
@@ -57,29 +71,34 @@ body {
 
 .masthead {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 22px 10px;
-  border-bottom: 1px solid var(--ink);
+  padding: 12px 22px 10px;
+  border-bottom: var(--frame-w) solid var(--frame);
 }
 
 .masthead-title {
   margin: 0;
-  font-family: var(--serif);
+  font-family: var(--display);
   font-weight: 560;
   font-size: 26px;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  font-variation-settings: 'opsz' 40;
 }
 
-.masthead-title em {
-  color: var(--accent);
-  font-style: italic;
-  font-variation-settings:
-    'opsz' 40,
-    'SOFT' 60,
-    'WONK' 1;
+.masthead-tagline {
+  margin: 2px 0 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+.masthead-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
 }
 
 .masthead-stats {
@@ -89,7 +108,26 @@ body {
   color: var(--ink-soft);
 }
 
-/* ---- toolbar ------------------------------------------------------ */
+.flavor-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+.flavor-picker select {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+}
+
+/* ---- toolbar -------------------------------------------------------- */
 
 .toolbar {
   display: flex;
@@ -98,7 +136,7 @@ body {
   gap: 10px 18px;
   padding: 10px 22px;
   border-bottom: 1px solid var(--line);
-  background: var(--paper-deep);
+  background: var(--bg-2);
 }
 
 .search {
@@ -152,7 +190,7 @@ body {
   color: var(--ink);
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius);
   padding: 3px 11px 3px 8px;
   cursor: pointer;
   transition:
@@ -192,7 +230,7 @@ body {
   accent-color: var(--accent);
 }
 
-/* ---- map ---------------------------------------------------------- */
+/* ---- map ------------------------------------------------------------ */
 
 .main {
   flex: 1;
@@ -204,8 +242,7 @@ body {
   flex: 1;
   position: relative;
   min-width: 0;
-  /* graph-paper dot grid */
-  background-image: radial-gradient(var(--line-soft) 1px, transparent 1px);
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
   background-size: 26px 26px;
 }
 
@@ -214,13 +251,13 @@ body {
   inset: 0;
 }
 
-/* ---- panel -------------------------------------------------------- */
+/* ---- panel ----------------------------------------------------------- */
 
 .panel {
   width: 420px;
   flex: none;
   overflow-y: auto;
-  border-left: 1px solid var(--ink);
+  border-left: var(--frame-w) solid var(--frame);
   background: var(--card);
   padding: 22px 24px 30px;
 }
@@ -265,7 +302,7 @@ body {
   color: var(--ink-soft);
   background: none;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius);
   width: 26px;
   height: 26px;
   cursor: pointer;
@@ -279,12 +316,11 @@ body {
 
 .specimen-title {
   margin: 10px 0 12px;
-  font-family: var(--serif);
+  font-family: var(--display);
   font-weight: 540;
   font-size: 24px;
   line-height: 1.18;
   letter-spacing: -0.015em;
-  font-variation-settings: 'opsz' 30;
 }
 
 .specimen-summary {
@@ -316,7 +352,7 @@ body {
 
 .tag-bar-track {
   height: 5px;
-  background: var(--paper-deep);
+  background: var(--bg-2);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -348,19 +384,18 @@ body {
   white-space: pre-wrap;
   word-break: break-word;
   color: var(--ink-soft);
-  background: var(--paper);
+  background: var(--bg);
   border: 1px solid var(--line-soft);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* overview */
 
 .overview-lede {
   margin: 4px 0 24px;
-  font-family: var(--serif);
+  font-family: var(--display);
   font-size: 17px;
   line-height: 1.45;
-  font-variation-settings: 'opsz' 18;
   color: var(--ink);
 }
 
@@ -406,7 +441,7 @@ body {
   color: var(--ink-faint);
 }
 
-/* ---- screens ------------------------------------------------------ */
+/* ---- screens --------------------------------------------------------- */
 
 .screen-message {
   height: 100svh;
@@ -415,6 +450,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  background: var(--bg);
   font-family: var(--mono);
   font-size: 14px;
   color: var(--ink-soft);
@@ -425,4 +461,229 @@ body {
   white-space: pre-wrap;
   font-size: 12px;
   color: #a04b38;
+}
+
+/* ==== flavor: field atlas ============================================= */
+
+.app[data-theme='field-atlas'] .masthead-title {
+  font-variation-settings: 'opsz' 40;
+}
+
+.app[data-theme='field-atlas'] .specimen-title {
+  font-variation-settings: 'opsz' 30;
+}
+
+/* ==== flavor: terminal ================================================ */
+
+.app[data-theme='terminal'] {
+  --bg: #070b07;
+  --bg-2: #0a100a;
+  --card: #0d130d;
+  --ink: #b6e6c2;
+  --ink-soft: #6ea87c;
+  --ink-faint: #3f5a46;
+  --accent: #4af28a;
+  --line: #1f3322;
+  --line-soft: #16251a;
+  --frame: #2c4631;
+  --radius: 0;
+  --radius-sm: 0;
+  --grid-dot: #101b12;
+
+  --display: 'IBM Plex Mono', ui-monospace, monospace;
+  --body: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+.app[data-theme='terminal'] ::selection {
+  background: #1f3322;
+}
+
+.app[data-theme='terminal'] .masthead-title {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.app[data-theme='terminal'] .masthead-title::before {
+  content: '$ ';
+  color: var(--ink-soft);
+}
+
+.app[data-theme='terminal'] .masthead-title::after {
+  content: '▮';
+  margin-left: 6px;
+  color: var(--accent);
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.app[data-theme='terminal'] .specimen-title {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.app[data-theme='terminal'] .overview-lede {
+  font-size: 14px;
+}
+
+/* ==== flavor: notebook ================================================ */
+
+.app[data-theme='notebook'] {
+  --bg: #fdfcf7;
+  --bg-2: #f6f4ea;
+  --card: #ffffff;
+  --ink: #3a372f;
+  --ink-soft: #6f6a5d;
+  --ink-faint: #a8a294;
+  --accent: #3b82f6;
+  --line: #ddd8cb;
+  --line-soft: #ebe7db;
+  --frame: #c9c3b4;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --grid-dot: #e4eef9;
+
+  --display: 'Shantell Sans Variable', cursive;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+.app[data-theme='notebook'] .map {
+  /* ruled-notebook lines instead of the dot grid */
+  background-image: linear-gradient(
+    to bottom,
+    transparent 27px,
+    #e7eef8 27px,
+    #e7eef8 28px
+  );
+  background-size: 100% 28px;
+}
+
+.app[data-theme='notebook'] .masthead-title {
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: 0;
+  transform: rotate(-0.7deg);
+}
+
+.app[data-theme='notebook'] .specimen-title {
+  font-weight: 580;
+  font-size: 21px;
+}
+
+.app[data-theme='notebook'] .overview-lede {
+  font-size: 16px;
+  font-weight: 420;
+}
+
+.app[data-theme='notebook'] .chip {
+  border-style: dashed;
+}
+
+/* ==== flavor: swiss =================================================== */
+
+.app[data-theme='swiss'] {
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --card: #ffffff;
+  --ink: #111111;
+  --ink-soft: #4b4b4b;
+  --ink-faint: #9a9a9a;
+  --accent: #e11d48;
+  --line: #111111;
+  --line-soft: #e5e5e5;
+  --frame: #111111;
+  --frame-w: 2px;
+  --radius: 0;
+  --radius-sm: 0;
+  --grid-dot: #ededed;
+
+  --display: 'Archivo Variable', sans-serif;
+  --body: 'Archivo Variable', sans-serif;
+  --mono: 'Archivo Variable', sans-serif;
+}
+
+.app[data-theme='swiss'] .masthead-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: lowercase;
+}
+
+.app[data-theme='swiss'] .specimen-title {
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.app[data-theme='swiss'] .toolbar {
+  border-bottom: 2px solid var(--frame);
+}
+
+.app[data-theme='swiss'] .section-label {
+  color: var(--accent);
+  letter-spacing: 0.2em;
+}
+
+.app[data-theme='swiss'] .chip {
+  border-color: var(--ink);
+}
+
+.app[data-theme='swiss'] .overview-lede {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ==== flavor: observatory ============================================= */
+
+.app[data-theme='observatory'] {
+  --bg: #0a0f24;
+  --bg-2: #0d1330;
+  --card: #101631;
+  --ink: #cfd9f4;
+  --ink-soft: #93a3cf;
+  --ink-faint: #5a6a9b;
+  --accent: #ffd166;
+  --line: #243059;
+  --line-soft: #1a2347;
+  --frame: #2c3a66;
+  --radius: 999px;
+  --radius-sm: 6px;
+  --grid-dot: #182048;
+
+  --display: 'Cormorant Variable', serif;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+.app[data-theme='observatory'] {
+  background:
+    radial-gradient(ellipse 120% 90% at 70% -10%, #1a2350 0%, transparent 60%),
+    var(--bg);
+}
+
+.app[data-theme='observatory'] .masthead-title {
+  font-size: 30px;
+  font-weight: 560;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+.app[data-theme='observatory'] .specimen-title {
+  font-size: 27px;
+  font-weight: 540;
+  font-style: italic;
+}
+
+.app[data-theme='observatory'] .overview-lede {
+  font-size: 19px;
+  font-style: italic;
+}
+
+.app[data-theme='observatory'] .panel {
+  background: rgba(16, 22, 49, 0.82);
 }

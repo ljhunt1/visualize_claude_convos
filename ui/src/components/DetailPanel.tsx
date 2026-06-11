@@ -1,17 +1,20 @@
-import { clusterColor, clusterLabel } from 'palette';
 import { useMemo } from 'react';
+import { clusterColor, clusterLabel, type Theme } from 'themes';
 import type { Conversation, UIData } from 'types';
 
 interface DetailPanelProps {
+  theme: Theme;
   data: UIData;
   selected: Conversation | null;
   onClose: () => void;
 }
 
 function SpecimenCard({
+  theme,
   conversation,
   onClose,
 }: {
+  theme: Theme;
   conversation: Conversation;
   onClose: () => void;
 }) {
@@ -19,7 +22,7 @@ function SpecimenCard({
     () => [...conversation.tags].sort((a, b) => b.score - a.score),
     [conversation.tags],
   );
-  const ink = clusterColor(conversation.cluster);
+  const ink = clusterColor(theme, conversation.cluster);
 
   return (
     <article className="specimen">
@@ -75,7 +78,7 @@ function SpecimenCard({
   );
 }
 
-function AtlasOverview({ data }: { data: UIData }) {
+function AtlasOverview({ theme, data }: { theme: Theme; data: UIData }) {
   const { conversations, landmarks, meta } = data;
 
   const clusterCounts = useMemo(() => {
@@ -97,8 +100,8 @@ function AtlasOverview({ data }: { data: UIData }) {
     <div className="overview">
       <p className="overview-lede">
         {conversations.length} conversations and {landmarks.length} landmark
-        tags, arranged by semantic similarity. Select a point to open its
-        specimen card.
+        tags, arranged by semantic similarity. Click a dot to read one; the ✛
+        marks are reference tags, not conversations.
       </p>
 
       <section>
@@ -108,7 +111,7 @@ function AtlasOverview({ data }: { data: UIData }) {
             <li key={cluster ?? 'noise'} className="cluster-row">
               <span
                 className="cluster-dot"
-                style={{ background: clusterColor(cluster) }}
+                style={{ background: clusterColor(theme, cluster) }}
               />
               <span className="cluster-name">{clusterLabel(cluster)}</span>
               <span className="cluster-count">{count}</span>
@@ -139,13 +142,18 @@ function AtlasOverview({ data }: { data: UIData }) {
   );
 }
 
-export function DetailPanel({ data, selected, onClose }: DetailPanelProps) {
+export function DetailPanel({
+  theme,
+  data,
+  selected,
+  onClose,
+}: DetailPanelProps) {
   return (
     <aside className="panel">
       {selected ? (
-        <SpecimenCard conversation={selected} onClose={onClose} />
+        <SpecimenCard theme={theme} conversation={selected} onClose={onClose} />
       ) : (
-        <AtlasOverview data={data} />
+        <AtlasOverview theme={theme} data={data} />
       )}
     </aside>
   );

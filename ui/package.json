@@ -14,7 +14,10 @@
     "typewatch": "tsc -b --watch"
   },
   "dependencies": {
+    "@fontsource-variable/archivo": "^5.2.8",
+    "@fontsource-variable/cormorant": "^5.2.8",
     "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource-variable/shantell-sans": "^5.2.7",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-sans": "^5.2.8",
     "plotly.js-basic-dist-min": "^3.6.0",
