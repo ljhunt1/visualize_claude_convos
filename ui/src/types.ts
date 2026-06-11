@@ -1,42 +1,60 @@
+/**
+ * Wire-format contract with the Python side.
+ *
+ * These types must match the JSON written by
+ * `experiments/dump_test_data_for_ui.py` (currently a one-off test dump;
+ * eventually the real pipeline). The inner types (Conversation, Landmark,
+ * Tag) double as the prop vocabulary for components.
+ */
+
 export interface Tag {
   name: string;
   score: number;
 }
 
 export interface Conversation {
-  filename: string;
+  id: string;
   title: string;
+  /** ISO date (YYYY-MM-DD). */
   date: string;
   summary: string;
   x: number;
   y: number;
-  cluster: number;
+  /** Cluster index, or null for HDBSCAN noise points. */
+  cluster: number | null;
   tags: Tag[];
-  n_chars: number;
+  nChars: number;
+  transcript: string;
 }
 
-export interface Feature {
+/**
+ * A reference tag placed into the same UMAP space as the conversations.
+ * Not a canonical feature set — just deduped-ish anchors for orientation.
+ */
+export interface Landmark {
   name: string;
   x: number;
   y: number;
-  member_count: number;
+  /** Number of conversations this tag appeared in. */
+  memberCount: number;
 }
 
 export interface UmapMeta {
-  n_neighbors: number;
-  min_dist: number;
-  mean_center: boolean;
+  nNeighbors: number;
+  minDist: number;
+  meanCenter: boolean;
 }
 
 export interface DataMeta {
-  n_conversations: number;
-  n_features: number;
+  /** ISO timestamp of when the dump was generated. */
+  generatedAt: string;
   umap: UmapMeta;
-  cluster_source: string;
+  /** Repo-relative path of the clustering experiment the labels came from. */
+  clusterSource: string;
 }
 
 export interface UIData {
   conversations: Conversation[];
-  features: Feature[];
+  landmarks: Landmark[];
   meta: DataMeta;
 }
