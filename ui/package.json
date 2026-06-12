@@ -20,6 +20,7 @@
     "@fontsource-variable/shantell-sans": "^5.2.7",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-sans": "^5.2.8",
+    "@radix-ui/react-slider": "^1.4.0",
     "plotly.js-basic-dist-min": "^3.6.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

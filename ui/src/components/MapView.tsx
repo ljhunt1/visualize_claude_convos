@@ -41,6 +41,9 @@ const CONFIG: Partial<Config> = {
 /** Most landmark labels shown at once, even fully zoomed in. */
 const MAX_LABELS = 28;
 
+/** Opacity for points filtered out by search/date — ghosts, not gone. */
+const DIM_OPACITY = 0.06;
+
 function groupByCluster(
   conversations: Conversation[],
 ): Map<number | null, Conversation[]> {
@@ -173,26 +176,48 @@ export function MapView({
 
     for (const [cluster, convs] of groupByCluster(conversations)) {
       if (hiddenClusters.has(cluster)) continue;
-      traces.push({
-        type: 'scatter',
-        mode: 'markers',
-        x: convs.map((c) => c.x),
-        y: convs.map((c) => c.y),
-        customdata: convs.map((c) => c.id),
-        marker: {
-          size: 10,
-          color: clusterColor(theme, cluster),
-          opacity: convs.map((c) =>
-            matchedIds === null || matchedIds.has(c.id) ? 0.9 : 0.12,
+      const active =
+        matchedIds === null ? convs : convs.filter((c) => matchedIds.has(c.id));
+      const dimmed =
+        matchedIds === null ? [] : convs.filter((c) => !matchedIds.has(c.id));
+
+      // Filtered-out points are faint ghosts and ignore hover/click,
+      // so they don't produce phantom tooltips at near-zero opacity.
+      if (dimmed.length > 0) {
+        traces.push({
+          type: 'scatter',
+          mode: 'markers',
+          x: dimmed.map((c) => c.x),
+          y: dimmed.map((c) => c.y),
+          marker: {
+            size: 10,
+            color: clusterColor(theme, cluster),
+            opacity: DIM_OPACITY,
+            line: { width: 1, color: theme.plot.markerOutline },
+          },
+          hoverinfo: 'skip',
+        });
+      }
+      if (active.length > 0) {
+        traces.push({
+          type: 'scatter',
+          mode: 'markers',
+          x: active.map((c) => c.x),
+          y: active.map((c) => c.y),
+          customdata: active.map((c) => c.id),
+          marker: {
+            size: 10,
+            color: clusterColor(theme, cluster),
+            opacity: 0.9,
+            line: { width: 1, color: theme.plot.markerOutline },
+          },
+          hoverinfo: 'text',
+          hovertext: active.map(
+            (c) =>
+              `${c.title}<br>${c.date} · ${clusterLabel(cluster, clusterNames)}`,
           ),
-          line: { width: 1, color: theme.plot.markerOutline },
-        },
-        hoverinfo: 'text',
-        hovertext: convs.map(
-          (c) =>
-            `${c.title}<br>${c.date} · ${clusterLabel(cluster, clusterNames)}`,
-        ),
-      });
+        });
+      }
     }
 
     const selected = conversations.find((c) => c.id === selectedId);
@@ -205,7 +230,7 @@ export function MapView({
         x: [selected.x],
         y: [selected.y],
         marker: {
-          size: 14,
+          size: 16,
           color: 'rgba(0,0,0,0)',
           line: { width: 2, color: theme.plot.selectionRing },
         },

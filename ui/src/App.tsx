@@ -1,5 +1,6 @@
 import { DetailPanel } from 'components/DetailPanel';
 import { MapView } from 'components/MapView';
+import { TimeBar } from 'components/TimeBar';
 import { useUIData } from 'data';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { clusterColor, clusterLabel, THEMES, themeById } from 'themes';
@@ -33,6 +34,10 @@ function Atlas({ data }: { data: UIData }) {
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [dateRange, setDateRange] = useState<{
+    start: string;
+    end: string;
+  } | null>(null);
   const [showLandmarks, setShowLandmarks] = useState(true);
   const [hiddenClusters, setHiddenClusters] = useState<
     ReadonlySet<number | null>
@@ -58,15 +63,41 @@ function Atlas({ data }: { data: UIData }) {
     [data.clusters],
   );
 
+  // Conversations are sorted by date in the export.
+  const dateExtent = useMemo(() => {
+    const dates = data.conversations.map((c) => c.date);
+    return {
+      min: dates[0] ?? '2024-01-01',
+      max: dates[dates.length - 1] ?? '2026-01-01',
+    };
+  }, [data.conversations]);
+
+  const handleDateChange = useCallback(
+    (start: string, end: string) => {
+      setDateRange(
+        start <= dateExtent.min && end >= dateExtent.max
+          ? null
+          : { start, end },
+      );
+    },
+    [dateExtent],
+  );
+
+  // Search and date range compose into one dim-the-rest filter set.
   const matchedIds = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return null;
+    if (!needle && !dateRange) return null;
     return new Set(
       data.conversations
-        .filter((conv) => matchesQuery(conv, needle))
+        .filter(
+          (conv) =>
+            (!needle || matchesQuery(conv, needle)) &&
+            (!dateRange ||
+              (conv.date >= dateRange.start && conv.date <= dateRange.end)),
+        )
         .map((conv) => conv.id),
     );
-  }, [data.conversations, query]);
+  }, [data.conversations, query, dateRange]);
 
   const selected = useMemo(
     () => data.conversations.find((conv) => conv.id === selectedId) ?? null,
@@ -189,6 +220,17 @@ function Atlas({ data }: { data: UIData }) {
             showLandmarks={showLandmarks}
             selectedId={selectedId}
             onSelect={handleSelect}
+          />
+          <TimeBar
+            min={dateExtent.min}
+            max={dateExtent.max}
+            start={dateRange?.start ?? dateExtent.min}
+            end={dateRange?.end ?? dateExtent.max}
+            active={dateRange !== null}
+            onChange={handleDateChange}
+            onReset={() => {
+              setDateRange(null);
+            }}
           />
         </div>
         <DetailPanel
