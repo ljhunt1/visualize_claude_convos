@@ -197,13 +197,19 @@ export function MapView({
 
     const selected = conversations.find((c) => c.id === selectedId);
     if (selected) {
+      // Plotly markers are pixel-sized; scale the ring with zoom so it
+      // hugs the dot at full extent and grows as you zoom in.
+      const extent = fullExtent(conversations, landmarks);
+      const zoom = viewport
+        ? (extent.x1 - extent.x0) / (viewport.x1 - viewport.x0)
+        : 1;
       traces.push({
         type: 'scatter',
         mode: 'markers',
         x: [selected.x],
         y: [selected.y],
         marker: {
-          size: 20,
+          size: Math.min(30, 14 * Math.max(1, zoom)),
           color: 'rgba(0,0,0,0)',
           line: { width: 2, color: theme.plot.selectionRing },
         },

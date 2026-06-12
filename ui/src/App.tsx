@@ -1,7 +1,7 @@
 import { DetailPanel } from 'components/DetailPanel';
 import { MapView } from 'components/MapView';
 import { useUIData } from 'data';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { clusterColor, clusterLabel, THEMES, themeById } from 'themes';
 import type { Conversation, UIData } from 'types';
 
@@ -73,7 +73,17 @@ function Atlas({ data }: { data: UIData }) {
     [data.conversations, selectedId],
   );
 
+  // Clicking the already-selected conversation toggles it off.
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId((prev) => (prev === id ? null : id));
+  }, []);
+
   const toggleCluster = (cluster: number | null) => {
+    // Hiding a cluster also deselects any conversation inside it.
+    const hiding = !hiddenClusters.has(cluster);
+    if (hiding && selected?.cluster === cluster) {
+      setSelectedId(null);
+    }
     setHiddenClusters((prev) => {
       const next = new Set(prev);
       if (next.has(cluster)) {
@@ -178,7 +188,7 @@ function Atlas({ data }: { data: UIData }) {
             hiddenClusters={hiddenClusters}
             showLandmarks={showLandmarks}
             selectedId={selectedId}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
           />
         </div>
         <DetailPanel
